@@ -41,6 +41,29 @@ h1 {
   margin-bottom: 18px;
   color: var(--text-sub);
 }
+#currentStatus {
+  display: inline-block;
+  min-width: 80px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: bold;
+  transition: background 0.3s, color 0.3s;
+  margin-left: 4px;
+}
+.role-select {
+  margin-bottom: 12px;
+}
+.role-select label {
+  font-size: 1em;
+  color: var(--text-main);
+}
+.role-select select {
+  margin-left: 8px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+}
 .buttons {
   margin-bottom: 18px;
 }

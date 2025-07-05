@@ -8,11 +8,20 @@ const HISTORY_KEY = "nomikaiStatusHistory";
 function updateStatus(status) {
   const nickname = document.getElementById("nicknameInput")?.value?.trim() || "匿名";
   const now = new Date();
+  const role = document.getElementById("roleSelect")?.value || "participant";
+  let mapUrl = "";
+  if (role === "participant") {
+    mapUrl = document.getElementById("participantMapUrl")?.value?.trim() || "";
+  } else if (role === "driver") {
+    mapUrl = document.getElementById("driverMapUrl")?.value?.trim() || "";
+  }
   const entry = {
     status: status,
     nickname: nickname,
     updatedAt: now.toLocaleString("ja-JP"),
-    timestamp: now.getTime()
+    timestamp: now.getTime(),
+    role: role,
+    mapUrl: mapUrl
   };
   // 最新状況を保存
   localStorage.setItem(STATUS_KEY, JSON.stringify(entry));
@@ -24,14 +33,72 @@ function updateStatus(status) {
   renderHistory();
 }
 
+// 状況ごとに色分け
+function setStatusColor(status) {
+  const statusElem = document.getElementById("currentStatus");
+  let color = "", bg = "";
+  if (!status) {
+    statusElem.style.background = "";
+    statusElem.style.color = "";
+    return;
+  }
+  if (status.includes("迎えに来てOK")) {
+    bg = "#e3f7d3"; color = "#217a00";
+  } else if (status.includes("もうすぐ終わりそう")) {
+    bg = "#fff7d6"; color = "#b48a00";
+  } else if (status.includes("まだかかりそう")) {
+    bg = "#f0f0f0"; color = "#555";
+  } else if (status.includes("飲みすぎた")) {
+    bg = "#ffe0e0"; color = "#b80000";
+  } else if (status.includes("迎えに行きます")) {
+    bg = "#d0e8ff"; color = "#0057b7";
+  } else if (status.includes("もう少しで着きます")) {
+    bg = "#c7ffd6"; color = "#008c4a";
+  } else if (status.includes("了解")) {
+    bg = "#f0f0f0"; color = "#555";
+  } else {
+    bg = ""; color = "";
+  }
+  statusElem.style.background = bg;
+  statusElem.style.color = color;
+}
+
+// 地図リンク表示
+function renderMapLink(status, mapUrl) {
+  const area = document.getElementById("mapLinkArea");
+  if (!area) return;
+  // 地図URLがあれば優先して表示
+  if (mapUrl && mapUrl.startsWith("http")) {
+    area.innerHTML = `<a href="${mapUrl}" target="_blank" style="color:#0057b7;text-decoration:underline;">地図を開く（Googleマップ）</a>`;
+    return;
+  }
+  // 送迎者到着時のみ地図リンク表示（URL未指定時はGoogleマップトップ）
+  if (status && (status.includes("迎えに行きます") || status.includes("もう少しで着きます"))) {
+    area.innerHTML = `<a href="https://www.google.co.jp/maps" target="_blank" style="color:#0057b7;text-decoration:underline;">地図を開く（Googleマップ）</a>`;
+  } else {
+    area.innerHTML = "";
+  }
+}
+
 // 最新状況を取得して表示
 function renderStatus() {
   const data = JSON.parse(localStorage.getItem(STATUS_KEY) || "null");
   const statusElem = document.getElementById("currentStatus");
   if (data && data.status) {
     statusElem.textContent = data.status + "（更新: " + (data.updatedAt || "") + "）";
+    setStatusColor(data.status);
+    renderMapLink(data.status, data.mapUrl || "");
+    // 入力欄に地図URLを復元
+    if (data.role === "participant" && document.getElementById("participantMapUrl")) {
+      document.getElementById("participantMapUrl").value = data.mapUrl || "";
+    }
+    if (data.role === "driver" && document.getElementById("driverMapUrl")) {
+      document.getElementById("driverMapUrl").value = data.mapUrl || "";
+    }
   } else {
     statusElem.textContent = "未設定";
+    setStatusColor("");
+    renderMapLink("", "");
   }
 }
 
@@ -92,8 +159,37 @@ if (localStorage.getItem("darkMode") === "1" ||
 }
 
 
+function handleRoleSwitch() {
+  const role = document.getElementById("roleSelect")?.value || "participant";
+  const participantBtns = document.querySelector(".participant-buttons");
+  const driverBtns = document.querySelector(".driver-buttons");
+  const participantMapurl = document.querySelector(".participant-mapurl");
+  const driverMapurl = document.querySelector(".driver-mapurl");
+  if (role === "driver") {
+    participantBtns.style.display = "none";
+    driverBtns.style.display = "";
+    if (participantMapurl) participantMapurl.style.display = "none";
+    if (driverMapurl) driverMapurl.style.display = "";
+  } else {
+    participantBtns.style.display = "";
+    driverBtns.style.display = "none";
+    if (participantMapurl) participantMapurl.style.display = "";
+    if (driverMapurl) driverMapurl.style.display = "none";
+  }
+  localStorage.setItem("nomikaiRole", role);
+}
+
 // 初期表示
 window.addEventListener("DOMContentLoaded", () => {
   renderStatus();
   renderHistory();
+  // 役割選択初期化
+  const roleSelect = document.getElementById("roleSelect");
+  if (roleSelect) {
+    // 前回選択を復元
+    const savedRole = localStorage.getItem("nomikaiRole") || "participant";
+    roleSelect.value = savedRole;
+    handleRoleSwitch();
+    roleSelect.addEventListener("change", handleRoleSwitch);
+  }
 });
