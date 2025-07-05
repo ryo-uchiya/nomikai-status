@@ -91,6 +91,7 @@ if (localStorage.getItem("darkMode") === "1" ||
   setDarkMode(false);
 }
 
+
 // 初期表示
 window.addEventListener("DOMContentLoaded", () => {
   renderStatus();
