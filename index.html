@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>飲み会状況通知システム</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>飲み会状況通知</h1>
+    <div id="statusDisplay">現在の状況: <span id="currentStatus">未設定</span></div>
+    <div class="buttons">
+      <button onclick="updateStatus('もうすぐ終わりそう')">もうすぐ終わりそう</button>
+      <button onclick="updateStatus('まだかかりそう')">まだかかりそう</button>
+      <button onclick="updateStatus('迎えに来てOK')">迎えに来てOK</button>
+    </div>
+    <div class="info">
+      このページを送迎者と飲み会参加者で共有してください。<br>
+      どちらかがボタンを押すと、全員の画面にリアルタイムで反映されます。
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
